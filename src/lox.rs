@@ -2,6 +2,7 @@ use std::fs;
 use std::io::{self, Write};
 
 // use crate::exits;
+use crate::token;
 
 pub fn run_file(path: &String) {
     let contents = fs::read_to_string(path).expect("Failed to read file");

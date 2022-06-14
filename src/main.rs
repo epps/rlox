@@ -3,6 +3,7 @@ use std::process;
 
 mod exits;
 mod lox;
+mod token;
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
