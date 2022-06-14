@@ -1,6 +1,8 @@
 use std::fs;
 use std::io::{self, Write};
 
+// use crate::exits;
+
 pub fn run_file(path: &String) {
     let contents = fs::read_to_string(path).expect("Failed to read file");
     run(contents);
@@ -51,3 +53,12 @@ impl Scanner {
 }
 
 type Token<'a> = &'a str;
+
+// TODO: determine how to handle `hadError`
+fn error(line: usize, message: String) {
+    report(line, String::new(), message);
+}
+
+fn report(line: usize, location: String, message: String) {
+    eprintln!("[line {line}] Error {location}: {message}");
+}
