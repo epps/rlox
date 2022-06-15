@@ -3,6 +3,7 @@ use std::process;
 
 mod exits;
 mod lox;
+mod scanner;
 mod token;
 
 fn main() {

@@ -1,12 +1,14 @@
+#![allow(dead_code)]
+
 use std::fs;
 use std::io::{self, Write};
 
+use crate::scanner::Scanner;
 // use crate::exits;
-use crate::token;
 
 pub fn run_file(path: &String) {
     let contents = fs::read_to_string(path).expect("Failed to read file");
-    run(contents);
+    run(&contents);
 }
 
 pub fn run_prompt() {
@@ -23,37 +25,21 @@ pub fn run_prompt() {
 
         match num_bytes {
             0 => break,
-            _ => run(line.clone()),
+            _ => run(&line.clone()),
         };
 
         line.clear();
     }
 }
 
-fn run(source: String) {
-    let scanner = Scanner::new(source);
-    let tokens = scanner.scanTokens();
+fn run(source: &str) {
+    let mut scanner = Scanner::new(source);
+    let tokens = scanner.scan_tokens();
 
     for token in tokens {
-        println!("{token}");
+        println!("{:?}", token);
     }
 }
-
-struct Scanner {
-    source: String,
-}
-
-impl Scanner {
-    fn new(source: String) -> Scanner {
-        Scanner { source }
-    }
-
-    fn scanTokens(&self) -> Vec<Token> {
-        self.source.split(" ").collect()
-    }
-}
-
-type Token<'a> = &'a str;
 
 // TODO: determine how to handle `hadError`
 fn error(line: usize, message: String) {
