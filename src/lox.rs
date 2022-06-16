@@ -40,12 +40,3 @@ fn run(source: &str) {
         println!("{:?}", token);
     }
 }
-
-// TODO: determine how to handle `hadError`
-fn error(line: usize, message: String) {
-    report(line, String::new(), message);
-}
-
-fn report(line: usize, location: String, message: String) {
-    eprintln!("[line {line}] Error {location}: {message}");
-}

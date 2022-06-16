@@ -1,6 +1,7 @@
 use std::env;
 use std::process;
 
+mod errors;
 mod exits;
 mod lox;
 mod scanner;
