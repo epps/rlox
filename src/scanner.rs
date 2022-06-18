@@ -84,6 +84,20 @@ impl Scanner<'_> {
                     self.add_token(TokenType::Greater);
                 }
             }
+            '/' => {
+                if self.is_match('/') {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                } else {
+                    self.add_token(TokenType::Slash);
+                }
+            }
+            ' ' => {}
+            '\r' => {}
+            '\n' => {
+                self.line += 1;
+            }
             _ => errors::handle(self.line, format!("Unrecognized token: {}", char)),
         }
     }
@@ -99,6 +113,14 @@ impl Scanner<'_> {
 
         self.advance();
         true
+    }
+
+    fn peek(&mut self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+
+        *self.source_iter.peek().unwrap()
     }
 
     fn is_at_end(&self) -> bool {
