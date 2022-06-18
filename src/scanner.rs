@@ -99,8 +99,52 @@ impl Scanner<'_> {
                 self.line += 1;
             }
             '"' => self.string(),
-            _ => errors::handle(self.line, format!("Unrecognized token: {}", char)),
+            c => {
+                if self.is_digit(c) {
+                    self.number(c);
+                } else {
+                    errors::handle(self.line, format!("Unrecognized token: {}", char));
+                }
+            }
         }
+    }
+
+    fn number(&mut self, c: char) {
+        let mut number_chars = vec![c];
+
+        let next = self.peek();
+
+        while self.is_digit(next) {
+            number_chars.push(self.advance().unwrap());
+        }
+
+        /*
+        [4.6.2 Number literals](https://craftinginterpreters.com/scanning.html#number-literals)
+        introduces a `peekNext` method to look ahead
+        by 2 indices; however, this lookahead is complicated using the peekable
+        iterator. For now, I'll try to handle this case differently; however,
+        if `peekNext` is used in the future in a way that I can't account for with
+        "manual" logic, I may have to look for
+        [an alternative](https://stackoverflow.com/questions/62186871/how-to-correctly-use-peek-in-rust).
+         */
+        if next == '.' {
+            let fraction_char = self.advance().unwrap();
+            let next = self.peek();
+            if self.is_digit(next) {
+                number_chars.push(fraction_char);
+                loop {
+                    let a = self.advance();
+                    number_chars.push(a.unwrap());
+                    let next = self.peek();
+                    if !self.is_digit(next) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        let value: String = number_chars.into_iter().collect();
+        self.add_token(TokenType::Number, value);
     }
 
     fn string(&mut self) {
@@ -143,6 +187,10 @@ impl Scanner<'_> {
         }
 
         *self.source_iter.peek().unwrap()
+    }
+
+    fn is_digit(&self, c: char) -> bool {
+        c >= '0' && c <= '9'
     }
 
     fn is_at_end(&self) -> bool {
