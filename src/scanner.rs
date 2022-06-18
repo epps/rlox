@@ -46,42 +46,42 @@ impl Scanner<'_> {
     fn scan_token(&mut self) {
         let char = self.advance().unwrap();
         match char {
-            '(' => self.add_token(TokenType::LeftParen),
-            ')' => self.add_token(TokenType::RightParen),
-            '{' => self.add_token(TokenType::LeftBrace),
-            '}' => self.add_token(TokenType::RightBrace),
-            ',' => self.add_token(TokenType::Comma),
-            '.' => self.add_token(TokenType::Dot),
-            '-' => self.add_token(TokenType::Minus),
-            '+' => self.add_token(TokenType::Plus),
-            ';' => self.add_token(TokenType::Semicolon),
-            '*' => self.add_token(TokenType::Star),
+            '(' => self.add_token(TokenType::LeftParen, String::new()),
+            ')' => self.add_token(TokenType::RightParen, String::new()),
+            '{' => self.add_token(TokenType::LeftBrace, String::new()),
+            '}' => self.add_token(TokenType::RightBrace, String::new()),
+            ',' => self.add_token(TokenType::Comma, String::new()),
+            '.' => self.add_token(TokenType::Dot, String::new()),
+            '-' => self.add_token(TokenType::Minus, String::new()),
+            '+' => self.add_token(TokenType::Plus, String::new()),
+            ';' => self.add_token(TokenType::Semicolon, String::new()),
+            '*' => self.add_token(TokenType::Star, String::new()),
             '!' => {
                 if self.is_match('=') {
-                    self.add_token(TokenType::BangEqual);
+                    self.add_token(TokenType::BangEqual, String::new());
                 } else {
-                    self.add_token(TokenType::Bang);
+                    self.add_token(TokenType::Bang, String::new());
                 }
             }
             '=' => {
                 if self.is_match('=') {
-                    self.add_token(TokenType::EqualEqual);
+                    self.add_token(TokenType::EqualEqual, String::new());
                 } else {
-                    self.add_token(TokenType::Equal);
+                    self.add_token(TokenType::Equal, String::new());
                 }
             }
             '<' => {
                 if self.is_match('=') {
-                    self.add_token(TokenType::LessEqual);
+                    self.add_token(TokenType::LessEqual, String::new());
                 } else {
-                    self.add_token(TokenType::Less);
+                    self.add_token(TokenType::Less, String::new());
                 }
             }
             '>' => {
                 if self.is_match('=') {
-                    self.add_token(TokenType::GreaterEqual)
+                    self.add_token(TokenType::GreaterEqual, String::new())
                 } else {
-                    self.add_token(TokenType::Greater);
+                    self.add_token(TokenType::Greater, String::new());
                 }
             }
             '/' => {
@@ -90,7 +90,7 @@ impl Scanner<'_> {
                         self.advance();
                     }
                 } else {
-                    self.add_token(TokenType::Slash);
+                    self.add_token(TokenType::Slash, String::new());
                 }
             }
             ' ' => {}
@@ -98,8 +98,30 @@ impl Scanner<'_> {
             '\n' => {
                 self.line += 1;
             }
+            '"' => self.string(),
             _ => errors::handle(self.line, format!("Unrecognized token: {}", char)),
         }
+    }
+
+    fn string(&mut self) {
+        let mut string_chars = vec![];
+
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            string_chars.push(self.advance().unwrap());
+        }
+
+        if self.is_at_end() {
+            errors::handle(self.line, String::from("Unterminated string."));
+            return;
+        }
+
+        self.advance(); // The closing '""
+
+        let value: String = string_chars.into_iter().collect();
+        self.add_token(TokenType::String, value);
     }
 
     fn is_match(&mut self, expected: char) -> bool {
@@ -133,12 +155,8 @@ impl Scanner<'_> {
         char
     }
 
-    fn add_token(&mut self, token_type: TokenType) {
-        self.tokens.push(Token::new(
-            token_type,
-            String::new(),
-            String::new(),
-            self.line,
-        ))
+    fn add_token(&mut self, token_type: TokenType, text: String) {
+        self.tokens
+            .push(Token::new(token_type, text, String::new(), self.line))
     }
 }
