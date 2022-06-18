@@ -1,4 +1,4 @@
-use std::{iter::Peekable, str::Chars};
+use std::{collections::HashMap, iter::Peekable, str::Chars};
 
 use crate::errors;
 use crate::token::{Token, TokenType};
@@ -10,6 +10,7 @@ pub struct Scanner<'a> {
     start: usize,
     current: usize,
     line: usize,
+    keywords: HashMap<String, TokenType>,
 }
 
 impl Scanner<'_> {
@@ -24,6 +25,24 @@ impl Scanner<'_> {
             start: 0,
             current: 0,
             line: 1,
+            keywords: HashMap::from([
+                (String::from("and"), TokenType::And),
+                (String::from("class"), TokenType::Class),
+                (String::from("else"), TokenType::Else),
+                (String::from("false"), TokenType::False),
+                (String::from("for"), TokenType::For),
+                (String::from("fun"), TokenType::Fun),
+                (String::from("if"), TokenType::If),
+                (String::from("nil"), TokenType::Nil),
+                (String::from("or"), TokenType::Or),
+                (String::from("print"), TokenType::Print),
+                (String::from("return"), TokenType::Return),
+                (String::from("super"), TokenType::Super),
+                (String::from("this"), TokenType::This),
+                (String::from("true"), TokenType::This),
+                (String::from("var"), TokenType::Var),
+                (String::from("while"), TokenType::While),
+            ]),
         }
     }
 
@@ -102,10 +121,46 @@ impl Scanner<'_> {
             c => {
                 if self.is_digit(c) {
                     self.number(c);
+                } else if self.is_alpha(c) {
+                    self.identifier(c);
                 } else {
                     errors::handle(self.line, format!("Unrecognized token: {}", char));
                 }
             }
+        }
+    }
+
+    fn identifier(&mut self, c: char) {
+        let mut identifier_chars = vec![c];
+
+        loop {
+            let next = self.peek();
+            if !self.is_alphanumeric(next) {
+                break;
+            }
+            identifier_chars.push(self.advance().unwrap());
+        }
+
+        let value: String = identifier_chars.into_iter().collect();
+
+        match self.keywords.get(&value) {
+            Some(TokenType::And) => self.add_token(TokenType::And, String::new()),
+            Some(TokenType::Class) => self.add_token(TokenType::Class, String::new()),
+            Some(TokenType::Else) => self.add_token(TokenType::Else, String::new()),
+            Some(TokenType::False) => self.add_token(TokenType::False, String::new()),
+            Some(TokenType::For) => self.add_token(TokenType::For, String::new()),
+            Some(TokenType::Fun) => self.add_token(TokenType::Fun, String::new()),
+            Some(TokenType::If) => self.add_token(TokenType::If, String::new()),
+            Some(TokenType::Nil) => self.add_token(TokenType::Nil, String::new()),
+            Some(TokenType::Or) => self.add_token(TokenType::Or, String::new()),
+            Some(TokenType::Print) => self.add_token(TokenType::Print, String::new()),
+            Some(TokenType::Return) => self.add_token(TokenType::Return, String::new()),
+            Some(TokenType::Super) => self.add_token(TokenType::Super, String::new()),
+            Some(TokenType::This) => self.add_token(TokenType::This, String::new()),
+            Some(TokenType::True) => self.add_token(TokenType::True, String::new()),
+            Some(TokenType::Var) => self.add_token(TokenType::Var, String::new()),
+            Some(TokenType::While) => self.add_token(TokenType::While, String::new()),
+            _ => self.add_token(TokenType::Identifier, value),
         }
     }
 
@@ -191,6 +246,14 @@ impl Scanner<'_> {
 
     fn is_digit(&self, c: char) -> bool {
         c >= '0' && c <= '9'
+    }
+
+    fn is_alpha(&self, c: char) -> bool {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+    }
+
+    fn is_alphanumeric(&self, c: char) -> bool {
+        self.is_alpha(c) || self.is_digit(c)
     }
 
     fn is_at_end(&self) -> bool {
