@@ -3,6 +3,7 @@ use std::process;
 
 mod errors;
 mod exits;
+mod expr;
 mod lox;
 mod scanner;
 mod token;
