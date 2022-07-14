@@ -16,6 +16,7 @@ pub enum Expr {
 }
 
 pub enum LiteralType {
+    // TODO: Look into improving this.
     Number(f64),
     String(String),
     True(bool),

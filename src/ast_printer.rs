@@ -37,8 +37,8 @@ impl Visitor<String> for AstPrinter {
             Expr::Literal(lit) => match lit {
                 LiteralType::Number(n) => n.to_string(),
                 LiteralType::String(s) => s,
-                LiteralType::True(t) => String::from("true"),
-                LiteralType::False(f) => String::from("false"),
+                LiteralType::True(t) => t.to_string(),
+                LiteralType::False(f) => f.to_string(),
                 LiteralType::Nil(()) => String::from("nil"),
             },
             Expr::Unary { operator, right } => self.parenthesize(operator.literal, vec![right]),
@@ -55,13 +55,13 @@ mod tests {
 
     #[test]
     fn it_pretty_prints() {
-        let expr = Box::from(Expr::Binary {
-            left: Box::from(Expr::Unary {
+        let expr = Box::new(Expr::Binary {
+            left: Box::new(Expr::Unary {
                 operator: Token::new(TokenType::Minus, String::from("-"), String::from("-"), 1),
-                right: Box::from(Expr::Literal(LiteralType::Number(123.0))),
+                right: Box::new(Expr::Literal(LiteralType::Number(123.0))),
             }),
             operator: Token::new(TokenType::Star, String::from("*"), String::from("*"), 1),
-            right: Box::from(Expr::Grouping(Box::from(Expr::Literal(
+            right: Box::new(Expr::Grouping(Box::from(Expr::Literal(
                 LiteralType::Number(45.67),
             )))),
         });
