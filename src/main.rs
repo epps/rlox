@@ -6,6 +6,7 @@ mod errors;
 mod exits;
 mod expr;
 mod lox;
+mod parser;
 mod scanner;
 mod token;
 mod visitor;
